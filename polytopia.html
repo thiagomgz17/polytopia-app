@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>POLYTOPIA</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a1a;
+  --surface: #1A1A2E;
+  --surface2: #16213E;
+  --accent: #6C63FF;
+  --accent2: #00FFFF;
+  --danger: #FF0044;
+  --text: #E0E0FF;
+  --text2: #B0B0C8;
+  --text3: #686880;
+  --border: #303048;
+  --success: #00FF88;
+  --gold: #FFD700;
+}
+
+html { height: 100%; }
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Scanlines overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Retro vignette */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%);
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* PIXEL BORDER */
+.pixel-border {
+  border: 3px solid var(--border);
+  box-shadow:
+    0 0 0 1px var(--bg),
+    inset 0 0 0 1px var(--bg),
+    0 0 12px rgba(108,99,255,0.15);
+  image-rendering: pixelated;
+}
+
+/* HEADER */
+header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--accent);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+header h1 {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 14px;
+  color: var(--accent);
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px rgba(108,99,255,0.5);
+}
+#coinDisplay {
+  font-size: 12px;
+  color: var(--gold);
+}
+
+/* NAV */
+nav {
+  display: flex;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+nav button {
+  flex: 1;
+  min-width: 60px;
+  padding: 10px 6px;
+  background: transparent;
+  border: none;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  white-space: nowrap;
+}
+nav button .nav-icon { display: block; font-size: 18px; margin-bottom: 2px; }
+nav button.active { color: var(--accent); background: rgba(108,99,255,0.1); }
+nav button.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  width: 60%;
+  height: 2px;
+  background: var(--accent);
+}
+
+/* MAIN */
+main { padding: 16px; max-width: 480px; margin: 0 auto; padding-bottom: 80px; }
+.screen { display: none; animation: fadeIn 0.3s; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+h2 {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  text-align: center;
+  margin: 16px 0;
+  letter-spacing: 2px;
+}
+h3 { font-size: 11px; color: var(--text2); margin: 12px 0 8px; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--accent);
+  color: #fff;
+  border: 2px solid var(--accent);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  width: 100%;
+}
+.btn:hover { background: #5A52E0; box-shadow: 0 0 16px rgba(108,99,255,0.4); }
+.btn:active { transform: scale(0.97); }
+.btn-danger { background: var(--danger); border-color: var(--danger); }
+.btn-danger:hover { background: #CC0036; box-shadow: 0 0 16px rgba(255,0,68,0.4); }
+.btn-success { background: var(--success); border-color: var(--success); color: #000; }
+.btn-success:hover { background: #00CC66; }
+.btn-ghost { background: transparent; border-color: var(--border); color: var(--text2); }
+.btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm { padding: 8px 16px; font-size: 9px; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+/* TIMER */
+#timerDisplay {
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 42px;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 0 20px rgba(108,99,255,0.3);
+  padding: 16px 0;
+  letter-spacing: 4px;
+}
+#timerDisplay.failed { color: var(--danger); text-shadow: 0 0 20px rgba(255,0,68,0.3); }
+#timerLabel {
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--text3);
+  margin-bottom: 8px;
+}
+#timerLabel.failed { color: var(--danger); }
+
+/* CANVAS */
+#treeCanvas {
+  display: block;
+  margin: 8px auto;
+  image-rendering: pixelated;
+}
+
+/* STATS ROW */
+.stats-row {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 16px 0;
+}
+.stat-chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  text-align: center;
+  min-width: 80px;
+}
+.stat-chip .stat-icon { font-size: 16px; }
+.stat-chip .stat-value { font-size: 13px; font-weight: bold; color: #fff; }
+.stat-chip .stat-label { font-size: 8px; color: var(--text3); }
+
+/* PROGRESS BAR */
+.progress-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.progress-bar .fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s;
+  border-radius: 3px;
+}
+.progress-bar .fill.success { background: var(--success); }
+.progress-bar .fill.danger { background: var(--danger); }
+
+/* DIAGNOSTIC */
+.question-text { font-size: 11px; margin-bottom: 12px; color: var(--text2); }
+.option-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.option-btn:hover { border-color: var(--accent); background: rgba(108,99,255,0.1); }
+.option-btn.selected { border-color: var(--accent); background: rgba(108,99,255,0.2); color: var(--accent2); }
+
+/* PET */
+#petContainer {
+  width: 180px;
+  height: 180px;
+  margin: 0 auto;
+  position: relative;
+}
+.pet-face {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  transition: all 0.3s;
+  filter: drop-shadow(0 0 12px rgba(108,99,255,0.3));
+}
+.pet-face.zombified { filter: drop-shadow(0 0 12px rgba(0,255,0,0.3)); }
+.pet-face.deceased { filter: drop-shadow(0 0 12px rgba(128,128,128,0.3)); opacity: 0.5; }
+.pet-bars { margin-top: 12px; }
+
+/* EMERGENCY */
+.emergency-cost {
+  text-align: center;
+  font-size: 24px;
+  color: var(--danger);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  margin: 12px 0;
+}
+.emergency-desc { text-align: center; font-size: 10px; color: var(--text3); margin-bottom: 16px; }
+
+/* GARDEN */
+.garden-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.garden-item {
+  aspect-ratio: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  transition: all 0.2s;
+}
+.garden-item .garden-label { font-size: 7px; color: var(--text3); margin-top: 4px; }
+
+/* SHOP */
+.shop-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.shop-item .shop-icon { font-size: 28px; }
+.shop-item .shop-info { flex: 1; }
+.shop-item .shop-name { font-size: 11px; color: #fff; }
+.shop-item .shop-desc { font-size: 8px; color: var(--text3); }
+.shop-item .shop-price { font-size: 11px; color: var(--gold); }
+
+/* SOCIAL */
+.social-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.social-card .avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.social-card .social-name { font-size: 11px; color: #fff; }
+.social-card .social-level { font-size: 8px; color: var(--text3); }
+.social-card .social-status { font-size: 8px; padding: 2px 6px; border-radius: 2px; }
+
+/* PLAN CARDS */
+.plan-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.plan-card:hover { border-color: var(--accent); }
+.plan-card h3 { font-size: 13px; color: #fff; margin-bottom: 4px; }
+.plan-card .plan-desc { font-size: 9px; color: var(--text3); }
+.plan-card .plan-diff { font-size: 8px; padding: 2px 8px; border-radius: 2px; display: inline-block; margin-top: 8px; }
+
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 10000;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal-overlay.active { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  padding: 24px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+}
+.modal h2 { margin-top: 0; }
+.modal p { font-size: 11px; color: var(--text2); margin: 12px 0; }
+
+/* Responsive */
+@media (max-width: 400px) {
+  header h1 { font-size: 11px; }
+  #timerDisplay { font-size: 32px; }
+  nav button { font-size: 8px; padding: 8px 4px; }
+  nav button .nav-icon { font-size: 16px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>POLYTOPIA</h1>
+  <div id="coinDisplay">🪙 <span id="coinCount">0</span></div>
+</header>
+
+<nav>
+  <button class="active" data-screen="timer">⏱<br>ENFOQUE</button>
+  <button data-screen="diagnostic">📋<br>DIAG</button>
+  <button data-screen="pet">🐾<br>MASCOTA</button>
+  <button data-screen="garden">🌱<br>JARDÍN</button>
+  <button data-screen="plans">📜<br>PLANES</button>
+  <button data-screen="shop">🏪<br>TIENDA</button>
+  <button data-screen="emergency">🚨<br>PÁNICO</button>
+  <button data-screen="social">👥<br>LOBBY</button>
+</nav>
+
+<main>
+
+<!-- TIMER -->
+<section id="screen-timer" class="screen active">
+  <h2>MODO ENFOQUE</h2>
+  <div id="timerLabel">ENFOQUE</div>
+  <div id="timerDisplay">00:00:00</div>
+  <div style="text-align:center;font-size:11px;color:var(--text3)">/ 25:00</div>
+  <canvas id="treeCanvas" width="200" height="260"></canvas>
+  <div class="stats-row">
+    <div class="stat-chip"><div class="stat-icon">🌳</div><div class="stat-value" id="todaySessions">0</div><div class="stat-label">HOY</div></div>
+    <div class="stat-chip"><div class="stat-icon">🔥</div><div class="stat-value" id="streakDisplay">0</div><div class="stat-label">RACHA</div></div>
+    <div class="stat-chip"><div class="stat-icon">📊</div><div class="stat-value" id="levelDisplay">-</div><div class="stat-label">NIVEL</div></div>
+  </div>
+  <button class="btn btn-success" id="startBtn">▶ INICIAR ENFOQUE</button>
+  <div id="sessionFailed" style="display:none">
+    <p style="text-align:center;font-size:11px;color:var(--danger);margin:12px 0">Has abandonado la sesión. Tu ser poligonal no pudo crecer.</p>
+    <button class="btn btn-ghost" id="retryBtn">↻ REINTENTAR</button>
+  </div>
+</section>
+
+<!-- DIAGNOSTIC -->
+<section id="screen-diagnostic" class="screen">
+  <h2>DIAGNÓSTICO</h2>
+  <div id="diagnosticIntro" class="card">
+    <p style="font-size:10px;color:var(--text2);margin-bottom:12px">Descubre tu nivel de intoxicación digital. Responde con honestidad.</p>
+    <button class="btn" id="startDiagnosticBtn">▶ COMENZAR</button>
+  </div>
+  <div id="diagnosticQuestions" style="display:none"></div>
+  <div id="diagnosticResult" style="display:none" class="card">
+    <h3 style="color:var(--accent2);text-align:center" id="resultLevel"></h3>
+    <p style="font-size:10px;color:var(--text2);text-align:center;margin:8px 0" id="resultDesc"></p>
+    <div class="progress-bar"><div class="fill" id="resultBar" style="width:0%"></div></div>
+    <p style="font-size:9px;color:var(--text3);text-align:center;margin-top:8px" id="resultHours"></p>
+  </div>
+</section>
+
+<!-- PET -->
+<section id="screen-pet" class="screen">
+  <h2>TU MASCOTA POLIGONAL</h2>
+  <div id="petContainer">
+    <div class="pet-face" id="petFace">⬡</div>
+  </div>
+  <div id="petName" style="text-align:center;font-size:12px;color:#fff;margin:8px 0">Poly</div>
+  <div id="petState" style="text-align:center;font-size:9px;color:var(--text3)">🟢 Vivo</div>
+  <div class="pet-bars">
+    <div style="font-size:9px;color:var(--text2);margin-bottom:2px">Felicidad <span id="petHappiness">50</span>%</div>
+    <div class="progress-bar"><div class="fill" id="happinessBar" style="width:50%"></div></div>
+    <div style="font-size:9px;color:var(--text2);margin:8px 0 2px">Salud <span id="petHealth">100</span>%</div>
+    <div class="progress-bar"><div class="fill success" id="healthBar" style="width:100%"></div></div>
+    <div style="font-size:9px;color:var(--text2);margin:8px 0 2px">Experiencia <span id="petExp">0</span></div>
+    <div class="progress-bar"><div class="fill" id="expBar" style="width:0%"></div></div>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:12px">
+    <button class="btn btn-sm btn-ghost" id="feedPetBtn">🍕 Alimentar</button>
+    <button class="btn btn-sm btn-ghost" id="playPetBtn">🎮 Jugar</button>
+  </div>
+</section>
+
+<!-- GARDEN -->
+<section id="screen-garden" class="screen">
+  <h2>MI JARDÍN</h2>
+  <p style="text-align:center;font-size:9px;color:var(--text3);margin-bottom:12px">Cada sesión completada planta un árbol</p>
+  <div class="garden-grid" id="gardenGrid"></div>
+</section>
+
+<!-- PLANS -->
+<section id="screen-plans" class="screen">
+  <h2>PLANES DE DETOX</h2>
+  <div class="plan-card" data-plan="A">
+    <h3>🔵 Plan A — Moderación</h3>
+    <div class="plan-desc">Reduce redes sociales a 30 min/día. Desbloquea el modo enfoque reforzado.</div>
+    <span class="plan-diff" style="background:rgba(0,255,136,0.2);color:var(--success)">★ Fácil</span>
+  </div>
+  <div class="plan-card" data-plan="B">
+    <h3>🟡 Plan B — Ayuno Digital</h3>
+    <div class="plan-desc">Sin pantallas no esenciales por 24h. Activa el multiplicador de experiencia ×3.</div>
+    <span class="plan-diff" style="background:rgba(255,215,0,0.2);color:var(--gold)">★★ Medio</span>
+  </div>
+  <div class="plan-card" data-plan="C">
+    <h3>🔴 Plan C — Reinicio Total</h3>
+    <div class="plan-desc">Desconexión total por 72h. Desbloquea el jardín legendario y la evolución definitiva.</div>
+    <span class="plan-diff" style="background:rgba(255,0,68,0.2);color:var(--danger)">★★★ Difícil</span>
+  </div>
+</section>
+
+<!-- SHOP -->
+<section id="screen-shop" class="screen">
+  <h2>TIENDA</h2>
+  <div style="text-align:center;font-size:10px;color:var(--gold);margin-bottom:12px">🪙 <span id="shopCoins">0</span></div>
+  <div id="shopList"></div>
+</section>
+
+<!-- EMERGENCY -->
+<section id="screen-emergency" class="screen">
+  <h2>🚨 BOTÓN DE PÁNICO</h2>
+  <p style="text-align:center;font-size:10px;color:var(--text3);margin-bottom:16px">Cuando la tentación es demasiado fuerte, presiona este botón. Cada uso cuesta el doble que el anterior.</p>
+  <div class="emergency-cost" id="emergencyCost">🪙 10</div>
+  <p style="text-align:center;font-size:9px;color:var(--text3);margin-bottom:16px">Usos hoy: <span id="emergencyUses">0</span></p>
+  <button class="btn btn-danger" id="emergencyBtn">🚨 USAR BOTÓN DE PÁNICO</button>
+  <div id="emergencyResult" style="display:none;text-align:center;margin-top:12px;font-size:11px;color:var(--success)"></div>
+</section>
+
+<!-- SOCIAL -->
+<section id="screen-social" class="screen">
+  <h2>LOBBY SOCIAL</h2>
+  <p style="text-align:center;font-size:9px;color:var(--text3);margin-bottom:12px">Compañeros en su viaje digital detox</p>
+  <div id="socialList"></div>
+</section>
+
+</main>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal pixel-border">
+    <h2 id="modalTitle">✧</h2>
+    <p id="modalText"></p>
+    <button class="btn" id="modalBtn">OK</button>
+  </div>
+</div>
+
+<script>
+// ==================== STATE ====================
+const STATE_KEY = 'polytopia_state';
+const defaultState = {
+  coins: 0,
+  streak: 0,
+  todaySessions: 0,
+  lastSessionDate: null,
+  level: 'Casual',
+  emergencyUses: 0,
+  emergencyBaseCost: 10,
+  pet: { happiness: 50, health: 100, exp: 0, state: 'alive', species: 'cube', evolutionStage: 1 },
+  garden: [],
+  inventory: [],
+  diagnosticDone: false,
+  diagnosticLevel: null,
+  activePlan: null,
+  lastVisit: null,
+};
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (raw) return { ...defaultState, ...JSON.parse(raw) };
+  } catch(e) {}
+  return { ...defaultState };
+}
+
+function saveState() {
+  localStorage.setItem(STATE_KEY, JSON.stringify(state));
+}
+
+let state = loadState();
+
+// ==================== DOM REFS ====================
+const $ = id => document.getElementById(id);
+const timerDisplay = $('timerDisplay');
+const timerLabel = $('timerLabel');
+const treeCanvas = $('treeCanvas');
+const ctx = treeCanvas.getContext('2d');
+const startBtn = $('startBtn');
+const retryBtn = $('retryBtn');
+const sessionFailed = $('sessionFailed');
+const coinCount = $('coinCount');
+const todaySessions = $('todaySessions');
+const streakDisplay = $('streakDisplay');
+const levelDisplay = $('levelDisplay');
+const modal = $('modal');
+const modalTitle = $('modalTitle');
+const modalText = $('modalText');
+const modalBtn = $('modalBtn');
+
+// ==================== TIMER ====================
+let timerInterval = null;
+let stopwatch = null;
+let isRunning = false;
+let sessionFailedFlag = false;
+const TIMER_DURATION = 25 * 60; // 25 minutes
+
+function updateUI() {
+  coinCount.textContent = state.coins;
+  todaySessions.textContent = state.todaySessions;
+  streakDisplay.textContent = state.streak;
+  levelDisplay.textContent = state.level;
+}
+
+function formatTime(secs) {
+  const h = String(Math.floor(secs / 3600)).padStart(2, '0');
+  const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
+  const s = String(secs % 60).padStart(2, '0');
+  return `${h}:${m}:${s}`;
+}
+
+function drawTree(growth, alive) {
+  ctx.clearRect(0, 0, 200, 260);
+  const g = Math.max(0.1, Math.min(1, growth));
+  const baseHue = alive ? 120 + (1 - g) * 60 : 0;
+  const baseSat = 70;
+  const baseLit = 30 + g * 30;
+  const baseColor = `hsl(${baseHue}, ${baseSat}%, ${baseLit}%)`;
+
+  // trunk
+  ctx.fillStyle = '#5D4037';
+  ctx.beginPath();
+  ctx.moveTo(90, 200); ctx.lineTo(110, 200); ctx.lineTo(105, 260); ctx.lineTo(95, 260);
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = alive ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // leaves
+  const leaves = [
+    [[100,60],[70,150],[100,140]], [[100,60],[100,140],[130,150]],
+    [[70,150],[50,200],[85,190]], [[130,150],[150,200],[115,190]],
+    [[70,150],[85,190],[100,140]], [[130,150],[115,190],[100,140]],
+  ];
+  ctx.save();
+  ctx.translate(100, 260);
+  ctx.scale(g, g);
+  ctx.translate(-100, -260);
+  for (const tri of leaves) {
+    const shade = Math.random() * 0.3;
+    ctx.fillStyle = `hsl(${baseHue}, ${baseSat}%, ${baseLit - shade * 30}%)`;
+    ctx.beginPath();
+    ctx.moveTo(tri[0][0], tri[0][1]);
+    ctx.lineTo(tri[1][0], tri[1][1]);
+    ctx.lineTo(tri[2][0], tri[2][1]);
+    ctx.closePath(); ctx.fill();
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function startTimer() {
+  if (isRunning) return;
+  isRunning = true;
+  sessionFailedFlag = false;
+  sessionFailed.style.display = 'none';
+  timerLabel.classList.remove('failed');
+  timerDisplay.classList.remove('failed');
+  timerLabel.textContent = 'ENFOQUE';
+  timerLabel.style.color = '';
+  stopwatch = { start: Date.now(), elapsed: 0 };
+  startBtn.disabled = true;
+  startBtn.textContent = '⏳ EN PROGRESO...';
+
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - stopwatch.start) / 1000);
+    const remaining = Math.max(0, TIMER_DURATION - elapsed);
+    timerDisplay.textContent = formatTime(elapsed);
+    drawTree(elapsed / TIMER_DURATION, true);
+    if (remaining <= 0) completeSession();
+  }, 200);
+}
+
+function completeSession() {
+  clearInterval(timerInterval);
+  isRunning = false;
+  startBtn.disabled = false;
+  startBtn.textContent = '▶ INICIAR ENFOQUE';
+
+  const today = new Date().toDateString();
+  if (state.lastSessionDate !== today) {
+    state.streak++;
+    state.lastSessionDate = today;
+  }
+  state.todaySessions++;
+  state.coins += 10;
+  state.pet.exp += 25;
+  state.pet.happiness = Math.min(100, state.pet.happiness + 10);
+  state.garden.push({ type: 'tree', date: Date.now() });
+  saveState();
+  updateUI();
+  updatePetUI();
+  updateGarden();
+
+  timerDisplay.textContent = '00:00:00';
+  drawTree(0, true);
+  showModal('✦ SESIÓN COMPLETA', `¡Has completado tu sesión de enfoque!\n+🪙 10 monedas\n+🌱 Un árbol plantado\n+🔥 Racha: ${state.streak} días`);
+}
+
+function failSession() {
+  clearInterval(timerInterval);
+  isRunning = false;
+  sessionFailedFlag = true;
+  sessionFailed.style.display = 'block';
+  timerLabel.textContent = 'SESIÓN FALLIDA';
+  timerLabel.classList.add('failed');
+  timerDisplay.classList.add('failed');
+  startBtn.disabled = false;
+  startBtn.textContent = '▶ INICIAR ENFOQUE';
+  state.pet.happiness = Math.max(0, state.pet.happiness - 15);
+  saveState();
+  updatePetUI();
+  drawTree(0, false);
+}
+
+startBtn.addEventListener('click', startTimer);
+retryBtn.addEventListener('click', () => {
+  sessionFailed.style.display = 'none';
+  timerLabel.textContent = 'ENFOQUE';
+  timerLabel.classList.remove('failed');
+  timerDisplay.classList.remove('failed');
+  timerDisplay.textContent = '00:00:00';
+  drawTree(0, true);
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && isRunning) failSession();
+});
+
+// ==================== NAVIGATION ====================
+document.querySelectorAll('nav button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    const screen = $('screen-' + btn.dataset.screen);
+    if (screen) screen.classList.add('active');
+  });
+});
+
+// ==================== DIAGNOSTIC ====================
+const questions = [
+  { q: '¿Cuántas horas al día usas tu teléfono?', options: [{t:'Menos de 2h',s:1},{t:'2-4h',s:2},{t:'4-8h',s:3},{t:'Más de 8h',s:4}] },
+  { q: '¿Revisas tu teléfono al despertar?', options: [{t:'Nunca',s:1},{t:'A veces',s:2},{t:'Casi siempre',s:3},{t:'Siempre',s:4}] },
+  { q: '¿Te sientes ansioso sin tu teléfono?', options: [{t:'No',s:1},{t:'Un poco',s:2},{t:'Bastante',s:3},{t:'Muchísimo',s:4}] },
+  { q: '¿Usas el teléfono mientras comes?', options: [{t:'Nunca',s:1},{t:'A veces',s:2},{t:'Seguido',s:3},{t:'Siempre',s:4}] },
+  { q: '¿Has intentado reducir el uso sin éxito?', options: [{t:'No',s:1},{t:'Una vez',s:2},{t:'Varias veces',s:3},{t:'Muchas veces',s:4}] },
+];
+
+let diagStep = 0;
+let diagAnswers = [];
+
+$('startDiagnosticBtn').addEventListener('click', () => {
+  $('diagnosticIntro').style.display = 'none';
+  diagStep = 0;
+  diagAnswers = [];
+  showQuestion();
+});
+
+function showQuestion() {
+  const container = $('diagnosticQuestions');
+  container.style.display = 'block';
+  const q = questions[diagStep];
+  let html = `<div class="question-text">${diagStep + 1}. ${q.q}</div>`;
+  q.options.forEach((opt, i) => {
+    html += `<button class="option-btn" data-score="${opt.s}">${opt.t}</button>`;
+  });
+  container.innerHTML = html;
+  container.querySelectorAll('.option-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      diagAnswers.push(parseInt(b.dataset.score));
+      diagStep++;
+      if (diagStep < questions.length) showQuestion();
+      else showDiagnosticResult();
+    });
+  });
+}
+
+function showDiagnosticResult() {
+  $('diagnosticQuestions').style.display = 'none';
+  $('diagnosticResult').style.display = 'block';
+  const total = diagAnswers.reduce((a, b) => a + b, 0);
+  const max = questions.length * 4;
+  const pct = total / max;
+
+  let level, desc;
+  if (pct <= 0.25) { level = '🧘 Monje Digital'; desc = 'Tienes un control excelente sobre tu uso digital. Sigue así.'; }
+  else if (pct <= 0.5) { level = '👤 Usuario Casual'; desc = 'Uso moderado, pero hay espacio para mejorar.'; }
+  else if (pct <= 0.75) { level = '🧟 Zombi de Pantalla'; desc = 'Pasas mucho tiempo frente a pantallas. Es hora de un cambio.'; }
+  else { level = '🤖 Cyborg Dependiente'; desc = 'Tu dependencia digital es alta. Los planes de detox son para ti.'; }
+
+  state.diagnosticDone = true;
+  state.diagnosticLevel = level;
+  state.level = level.split(' ').slice(1).join(' ');
+  saveState();
+  updateUI();
+
+  $('resultLevel').textContent = level;
+  $('resultDesc').textContent = desc;
+  $('resultBar').style.width = (pct * 100) + '%';
+  $('resultBar').className = 'fill ' + (pct > 0.5 ? 'danger' : 'success');
+  $('resultHours').textContent = `Puntuación: ${total}/${max}`;
+}
+
+// ==================== PET ====================
+const petFaces = { cube: '⬡', pyramid: '△', sphere: '○', dodecahedron: '⬠', glitchEntity: '✦' };
+const petNames = { cube: 'Poly', pyramid: 'Pyra', sphere: 'Globy', dodecahedron: 'Dodo', glitchEntity: 'Glitch' };
+
+function updatePetUI() {
+  const p = state.pet;
+  const face = $('petFace');
+  const species = p.species || 'cube';
+  face.textContent = petFaces[species] || '⬡';
+  $('petName').textContent = petNames[species] || 'Poly';
+
+  let stateText = '🟢 Vivo';
+  let stateClass = '';
+  if (p.state === 'zombified') { stateText = '💚 Zombificado'; stateClass = 'zombified'; }
+  else if (p.state === 'deceased') { stateText = '💀 Fallecido'; stateClass = 'deceased'; }
+  $('petState').textContent = stateText;
+  face.className = 'pet-face ' + stateClass;
+
+  $('petHappiness').textContent = p.happiness;
+  $('petHealth').textContent = p.health;
+  $('petExp').textContent = p.exp;
+
+  $('happinessBar').style.width = p.happiness + '%';
+  $('healthBar').style.width = p.health + '%';
+  $('expBar').style.width = Math.min(100, (p.exp % 100)) + '%';
+}
+
+$('feedPetBtn').addEventListener('click', () => {
+  if (state.coins < 3) { showModal('✧ Sin monedas', 'Necesitas 🪙3 monedas para alimentar a tu mascota.'); return; }
+  state.coins -= 3;
+  state.pet.happiness = Math.min(100, state.pet.happiness + 15);
+  state.pet.health = Math.min(100, state.pet.health + 10);
+  saveState(); updateUI(); updatePetUI();
+  showModal('🍕 Alimentado', 'Tu mascota te agradece con una vibración poligonal.');
+});
+
+$('playPetBtn').addEventListener('click', () => {
+  if (state.coins < 5) { showModal('✧ Sin monedas', 'Necesitas 🪙5 monedas para jugar.'); return; }
+  state.coins -= 5;
+  state.pet.happiness = Math.min(100, state.pet.happiness + 25);
+  state.pet.exp += 10;
+  saveState(); updateUI(); updatePetUI();
+  showModal('🎮 Jugaste', 'Tu mascota está más feliz. +25 de felicidad, +10 exp.');
+});
+
+// Pet decay over time
+setInterval(() => {
+  const now = Date.now();
+  if (!state.lastVisit) state.lastVisit = now;
+  const hoursAway = (now - state.lastVisit) / 3600000;
+  if (hoursAway > 2) {
+    state.pet.happiness = Math.max(0, state.pet.happiness - Math.floor(hoursAway * 2));
+    state.pet.health = Math.max(0, state.pet.health - Math.floor(hoursAway));
+    if (state.pet.happiness <= 0 && state.pet.state === 'alive') {
+      state.pet.state = 'zombified';
+      showModal('💚 Mascota zombificada', 'Has descuidado a tu mascota. Ahora está zombificada. Aliméntala y juega con ella para revivirla.');
+    }
+    saveState();
+    updatePetUI();
+  }
+  state.lastVisit = now;
+  saveState();
+}, 30000);
+
+// ==================== GARDEN ====================
+function updateGarden() {
+  const grid = $('gardenGrid');
+  const trees = state.garden.slice(-9);
+  grid.innerHTML = '';
+  for (let i = 0; i < 9; i++) {
+    const div = document.createElement('div');
+    div.className = 'garden-item';
+    if (i < trees.length) {
+      div.textContent = '🌳';
+      const label = document.createElement('div');
+      label.className = 'garden-label';
+      const d = new Date(trees[i].date);
+      label.textContent = `${d.getDate()}/${d.getMonth()+1}`;
+      div.appendChild(label);
+    } else {
+      div.textContent = '·';
+      div.style.color = 'var(--text3)';
+    }
+    grid.appendChild(div);
+  }
+}
+
+// ==================== SHOP ====================
+const shopItems = [
+  { id: 'skin1', name: 'Piel: Pirámide 🔺', desc: 'Cambia la forma de tu mascota', price: 50, icon: '△' },
+  { id: 'skin2', name: 'Piel: Esfera ⭕', desc: 'Una mascota más suave', price: 100, icon: '○' },
+  { id: 'skin3', name: 'Piel: Dodecaedro ⬠', desc: 'Para los verdaderos polígonos', price: 200, icon: '⬠' },
+  { id: 'skin4', name: 'Piel: Entidad Glitch ✦', desc: 'Rara y misteriosa', price: 500, icon: '✦' },
+  { id: 'booster', name: 'Multiplicador ×2', desc: 'Gana el doble de monedas (próxima sesión)', price: 30, icon: '⚡' },
+];
+
+function updateShop() {
+  const list = $('shopList');
+  list.innerHTML = '';
+  shopItems.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'shop-item';
+    div.innerHTML = `
+      <div class="shop-icon">${item.icon}</div>
+      <div class="shop-info">
+        <div class="shop-name">${item.name}</div>
+        <div class="shop-desc">${item.desc}</div>
+      </div>
+      <div class="shop-price">🪙 ${item.price}</div>
+      <button class="btn btn-sm btn-ghost buy-btn" data-id="${item.id}">COMPRAR</button>
+    `;
+    list.appendChild(div);
+  });
+  list.querySelectorAll('.buy-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = shopItems.find(i => i.id === btn.dataset.id);
+      if (!item) return;
+      if (state.coins < item.price) {
+        showModal('✧ Sin monedas', `Necesitas 🪙${item.price} monedas.`);
+        return;
+      }
+      if (item.id.startsWith('skin')) {
+        const species = item.id.replace('skin', '');
+        const speciesMap = { '1': 'pyramid', '2': 'sphere', '3': 'dodecahedron', '4': 'glitchEntity' };
+        const newSpecies = speciesMap[species];
+        if (newSpecies && state.pet.species === newSpecies) {
+          showModal('✧ Ya la tienes', 'Ya tienes esta piel equipada.');
+          return;
+        }
+        if (newSpecies) {
+          state.coins -= item.price;
+          state.pet.species = newSpecies;
+          saveState(); updateUI(); updatePetUI();
+          showModal('✓ Comprado', `¡${item.name} equipada!`);
+          updateShop();
+        }
+      } else if (item.id === 'booster') {
+        state.coins -= item.price;
+        state.pet.exp += 50; // booster effect
+        saveState(); updateUI();
+        showModal('✓ Comprado', 'Multiplicador activado. +50 exp ganada.');
+      }
+    });
+  });
+  $('shopCoins').textContent = state.coins;
+}
+
+// ==================== EMERGENCY ====================
+function updateEmergency() {
+  const cost = state.emergencyBaseCost * Math.pow(2, state.emergencyUses);
+  $('emergencyCost').textContent = `🪙 ${cost}`;
+  $('emergencyUses').textContent = state.emergencyUses;
+}
+
+$('emergencyBtn').addEventListener('click', () => {
+  const cost = state.emergencyBaseCost * Math.pow(2, state.emergencyUses);
+  if (state.coins < cost) {
+    showModal('✧ Sin monedas', `Necesitas 🪙${cost} monedas. Completá sesiones de enfoque para ganar más.`);
+    return;
+  }
+  state.coins -= cost;
+  state.emergencyUses++;
+  state.pet.happiness = Math.max(0, state.pet.happiness - 10);
+  saveState(); updateUI(); updatePetUI(); updateEmergency();
+
+  const result = $('emergencyResult');
+  result.style.display = 'block';
+  result.textContent = `✅ Botón de pánico usado. -🪙${cost} monedas. Siguiente costo: 🪙${state.emergencyBaseCost * Math.pow(2, state.emergencyUses)}`;
+  showModal('🚨 PÁNICO ACTIVADO', 'Has resistido la tentación. El costo aumenta exponencialmente, úsalo con sabiduría.');
+});
+
+// ==================== SOCIAL ====================
+const botNames = ['PixelWanderer', 'LowPolyHero', 'RetroRaven', 'VoxelVibes', 'CrashDummy'];
+const botLevels = ['Monje Digital', 'Usuario Casual', 'Zombi de Pantalla', 'Cyborg Dependiente'];
+const botStates = ['Enfoque', 'Descanso', 'Detox activo', 'Jardineria'];
+
+function updateSocial() {
+  const list = $('socialList');
+  list.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const div = document.createElement('div');
+    div.className = 'social-card';
+    div.innerHTML = `
+      <div class="avatar">${['🧘','👤','🧟','🤖','🌱'][i % 5]}</div>
+      <div style="flex:1">
+        <div class="social-name">${botNames[i]}</div>
+        <div class="social-level">${botLevels[i % 4]}</div>
+      </div>
+      <div class="social-status" style="background:rgba(108,99,255,0.2);color:var(--accent2)">${botStates[i % 4]}</div>
+    `;
+    list.appendChild(div);
+  }
+}
+
+// ==================== MODAL ====================
+function showModal(title, text) {
+  modalTitle.textContent = title;
+  modalText.textContent = text;
+  modal.classList.add('active');
+}
+modalBtn.addEventListener('click', () => modal.classList.remove('active'));
+
+// ==================== INIT ====================
+updateUI();
+updatePetUI();
+updateGarden();
+updateShop();
+updateEmergency();
+updateSocial();
+drawTree(0, true);
+
+// Check streak
+const today = new Date().toDateString();
+if (state.lastSessionDate && state.lastSessionDate !== today) {
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (state.lastSessionDate !== yesterday) state.streak = 0;
+}
+saveState();
+updateUI();
+
+console.log('🌿 POLYTOPIA v1.0 — Digital Detox RPG');
+console.log('¡Bienvenido a tu viaje de desconexión!');
+</script>
+</body>
+</html>
